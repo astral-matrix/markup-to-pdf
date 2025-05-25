@@ -60,6 +60,11 @@ tr:nth-child(even) {{ background: #f9f9f9; }}
 _FONT_STACKS = {
     "Inter": "Inter, 'DejaVu Sans', sans-serif",
     "Roboto": "Roboto, 'DejaVu Sans', sans-serif",
+    "SourceCodePro": "SourceCodePro, 'DejaVu Sans Mono', monospace",
+    "MesloLGS": "MesloLGS, 'DejaVu Sans Mono', monospace",
+    "Helvetica": "Helvetica, Arial, sans-serif",
+    "Times-Roman": "'Times New Roman', Times, serif",
+    "Courier": "Courier, monospace",
     "Serif": "serif",
 }
 
@@ -114,7 +119,9 @@ class PDFService:
         spacing_key = spacing_attr.name.lower() if hasattr(spacing_attr, "name") else str(spacing_attr).lower()
         line_height = _SPACING_LEVELS.get(spacing_key, 1.4)
 
-        font_stack = _FONT_STACKS.get(getattr(request, "font_family", "Inter"), "'DejaVu Sans', sans-serif")
+        requested_font = getattr(request, "font_family", "Inter")
+        font_stack = _FONT_STACKS.get(requested_font, "'DejaVu Sans', sans-serif")
+        font_face_css = font_service.get_font_face_css(requested_font)
         
         # Get the monospace font to use for code blocks
         monospace_font = font_service.get_monospace_font()
@@ -126,7 +133,11 @@ class PDFService:
             monospace_font=monospace_font
         )
 
-        return _PAGE_CSS + body_css
+        css_parts = [_PAGE_CSS]
+        if font_face_css:
+            css_parts.append(font_face_css)
+        css_parts.append(body_css)
+        return "\n".join(css_parts)
 
 
 # Singleton instance

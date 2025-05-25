@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field, validator
+from app.services.font_service import font_service
 
 
 class SpacingOption(str, Enum):
@@ -22,4 +23,10 @@ class PDFGenerationRequest(BaseModel):
     def markup_must_not_be_empty(cls, v):
         if not v.strip():
             raise ValueError("Markup cannot be empty")
-        return v 
+        return v
+
+    @validator("font_family")
+    def font_family_available(cls, v):
+        if v and v not in font_service.get_available_fonts():
+            raise ValueError("Unsupported font family")
+        return v
