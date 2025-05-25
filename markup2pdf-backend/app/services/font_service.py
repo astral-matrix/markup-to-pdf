@@ -95,6 +95,32 @@ class FontService:
             self._monospace_font = "Courier"
             
         self._fonts_registered = True
+
+    def get_font_face_css(self, font_family: str) -> str:
+        """Return @font-face CSS for the given font family if available."""
+        css_rules = []
+        files = self.available_fonts.get(font_family)
+        if not files:
+            return ""
+
+        for style, filename in files.items():
+            font_weight = "bold" if "bold" in style else "normal"
+            font_style = "italic" if "italic" in style else "normal"
+
+            ext = Path(filename).suffix.lower()
+            if ext == ".woff2":
+                font_format = "woff2"
+            elif ext == ".otf":
+                font_format = "opentype"
+            else:
+                font_format = "truetype"
+
+            src = self.fonts_path / filename
+            css_rules.append(
+                f"@font-face {{ font-family: '{font_family}'; src: url('{src.as_posix()}') format('{font_format}'); font-weight: {font_weight}; font-style: {font_style}; }}"
+            )
+
+        return "\n".join(css_rules)
     
     def get_available_fonts(self) -> List[str]:
         """Return list of available font families"""
